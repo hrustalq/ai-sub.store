@@ -74,32 +74,40 @@ jobs:
 
       - name: Wait for application health
         run: |
-          ssh "${VPS_USER}@${VPS_HOST}" <<EOF
-          set -e
-          cd '${DEPLOY_PATH}'
-          for attempt in \$(seq 1 36); do
-            if curl -sf http://localhost:3000/health/ready >/dev/null; then
+          ssh -o BatchMode=yes "${VPS_USER}@${VPS_HOST}" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          DEPLOY_PATH='/opt/ai-sub.store'
+          cd "${DEPLOY_PATH}"
+          for attempt in $(seq 1 36); do
+            if curl -sf http://127.0.0.1:3000/health/ready >/dev/null; then
               echo "Application is ready"
               exit 0
             fi
-            echo "Waiting for health check (\${attempt}/36)..."
+            echo "Waiting for health check (${attempt}/36)..."
             sleep 5
           done
           echo "Health check failed"
           docker compose -f docker-compose.prod.yml logs app --tail 100
           exit 1
-          EOF
+          REMOTE
 
       - name: Update nginx site configuration
         if: success()
         run: |
-          ssh "${VPS_USER}@${VPS_HOST}" <<EOF
-          if [[ -x '${DEPLOY_PATH}/scripts/nginx/install-nginx-site.sh' ]]; then
-            sudo PUBLIC_BASE_URL='${{ vars.PUBLIC_BASE_URL }}' '${DEPLOY_PATH}/scripts/nginx/install-nginx-site.sh'
-          else
+          ssh -o BatchMode=yes "${VPS_USER}@${VPS_HOST}" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          DEPLOY_PATH='/opt/ai-sub.store'
+          INSTALL_SCRIPT="${DEPLOY_PATH}/scripts/nginx/install-nginx-site.sh"
+          if [[ ! -x "${INSTALL_SCRIPT}" ]]; then
             echo "nginx install script not found — run scripts/setup-nginx-certbot.sh on the VPS first"
+            exit 0
           fi
-          EOF
+          if ! sudo -n true 2>/dev/null; then
+            echo "passwordless sudo is not configured — skipping nginx refresh"
+            exit 0
+          fi
+          sudo "${INSTALL_SCRIPT}"
+          REMOTE
 
       - name: Prune dangling images
         if: success()

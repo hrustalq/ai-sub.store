@@ -34,7 +34,7 @@ require_root() {
 }
 
 normalize_domain() {
-  local raw="${DOMAIN:-${PUBLIC_BASE_URL:-}}"
+  local raw="${DOMAIN:-${PUBLIC_BASE_URL:-ai-sub.store}}"
   raw="${raw#https://}"
   raw="${raw#http://}"
   raw="${raw%%/*}"

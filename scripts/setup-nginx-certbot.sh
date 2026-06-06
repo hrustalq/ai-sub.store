@@ -60,6 +60,7 @@ install_nginx_scripts() {
 configure_sudo_for_deploy() {
   cat >"${SUDOERS_FILE}" <<EOF
 # Managed by ai-sub.store — allow deploy user to refresh nginx after releases.
+# Command must match exactly (no env prefixes): sudo /opt/ai-sub.store/scripts/nginx/install-nginx-site.sh
 ${DEPLOY_USER} ALL=(root) NOPASSWD: ${NGINX_SCRIPT}
 EOF
   chmod 440 "${SUDOERS_FILE}"
