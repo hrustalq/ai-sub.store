@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="AI Sub Store">
+  <title>AI Sub Store</title>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="0.55" stop-color="#6D28D9"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="ai" x1="156" y1="148" x2="356" y2="248" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#C4B5FD"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <text
+    x="256"
+    y="224"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="176"
+    font-weight="800"
+    letter-spacing="-3"
+    fill="url(#ai)"
+  >AI</text>
+
+  <text
+    x="256"
+    y="322"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="92"
+    font-weight="700"
+    letter-spacing="5"
+    fill="#FFFFFF"
+  >Sub</text>
+
+  <text
+    x="256"
+    y="424"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="92"
+    font-weight="700"
+    letter-spacing="3"
+    fill="#FFFFFF"
+    opacity="0.92"
+  >Store</text>
+</svg>

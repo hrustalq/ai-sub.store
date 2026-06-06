@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FULFILLED
+  CANCELLED
+  FAILED
+}
+
+enum SessionScenario {
+  IDLE
+  PURCHASE
+  HELPDESK
+  ADMIN_HELPDESK
+  ADMIN_MANAGE
+}
+
+enum SessionStep {
+  IDLE
+  SELECTING_VENDOR
+  SELECTING_PLAN
+  CONFIRMING_ORDER
+  AWAITING_PAYMENT
+  DESCRIBING_ISSUE
+  ADMIN_REPLYING
+  ADMIN_AWAITING_EXCEL
+}
+
+enum SupportTicketStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum CredentialStatus {
+  AVAILABLE
+  ASSIGNED
+  REVOKED
+}
+
+/// AI tool vendor (Cursor, Claude, ChatGPT, Gemini).
+model Vendor {
+  id          String   @id
+  name        String
+  description String
+  emoji       String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plans  Plan[]
+  orders Order[]
+}
+
+/// Subscription plan offered by a vendor.
+model Plan {
+  id           String   @id
+  vendorId     String
+  name         String
+  description  String
+  durationDays Int
+  priceRub     Float
+  currency     String   @default("RUB")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vendor      Vendor       @relation(fields: [vendorId], references: [id])
+  credentials Credential[]
+  orders      Order[]
+
+  @@index([vendorId])
+}
+
+/// Telegram user who interacts with the bot.
+model TelegramUser {
+  telegramUserId BigInt   @id
+  username       String?
+  firstName      String?
+  lastName       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  session        UserSession?
+  orders         Order[]
+  supportTickets SupportTicket[]
+}
+
+/// Per-user bot conversation state (active scenario + step + context).
+model UserSession {
+  telegramUserId BigInt          @id
+  scenario       SessionScenario @default(IDLE)
+  step           SessionStep     @default(IDLE)
+  vendorId         String?
+  planId           String?
+  pendingOrderId   String?
+  supportTicketId  String?
+  updatedAt        DateTime        @updatedAt
+
+  user TelegramUser @relation(fields: [telegramUserId], references: [telegramUserId], onDelete: Cascade)
+}
+
+/// Supplier who provides subscription login credentials.
+model Counterparty {
+  id          String   @id @default(uuid())
+  name        String
+  contactInfo String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  credentials Credential[]
+}
+
+/// Pre-provisioned account credential in inventory.
+model Credential {
+  id             String           @id @default(uuid())
+  planId         String
+  counterpartyId String?
+  email          String
+  password       String
+  status         CredentialStatus @default(AVAILABLE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  plan         Plan          @relation(fields: [planId], references: [id])
+  counterparty Counterparty? @relation(fields: [counterpartyId], references: [id])
+  order        Order?
+
+  @@index([planId, status])
+  @@index([counterpartyId])
+}
+
+/// Purchase order for a subscription plan.
+model Order {
+  id             String      @id @default(uuid())
+  telegramUserId BigInt
+  telegramChatId BigInt
+  vendorId       String
+  planId         String
+  status         OrderStatus @default(PENDING_PAYMENT)
+  amountRub      Float
+  currency       String      @default("RUB")
+  credentialId       String?     @unique
+  yookassaPaymentId  String?     @unique
+  createdAt          DateTime    @default(now())
+  paidAt         DateTime?
+  fulfilledAt    DateTime?
+  cancelledAt    DateTime?
+
+  user       TelegramUser @relation(fields: [telegramUserId], references: [telegramUserId])
+  vendor     Vendor       @relation(fields: [vendorId], references: [id])
+  plan       Plan         @relation(fields: [planId], references: [id])
+  credential Credential?  @relation(fields: [credentialId], references: [id])
+
+  @@index([telegramUserId])
+  @@index([status])
+}
+
+/// User support request tracked via Telegram helpdesk.
+model SupportTicket {
+  id             String              @id @default(uuid())
+  telegramUserId BigInt
+  telegramChatId BigInt
+  status         SupportTicketStatus @default(OPEN)
+  relatedOrderId String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  closedAt       DateTime?
+
+  user     TelegramUser     @relation(fields: [telegramUserId], references: [telegramUserId])
+  messages SupportMessage[]
+
+  @@index([telegramUserId])
+  @@index([status])
+}
+
+/// Message in a support ticket (from user or admin).
+model SupportMessage {
+  id             String   @id @default(uuid())
+  ticketId       String
+  fromAdmin      Boolean  @default(false)
+  telegramUserId BigInt?
+  text           String
+  createdAt      DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 144" fill="none" role="img" aria-label="AI Sub Store">
+  <title>AI Sub Store</title>
+
+  <text
+    x="360"
+    y="100"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="96"
+    font-weight="800"
+    letter-spacing="-1"
+    fill="currentColor"
+  >
+    <tspan font-weight="800">AI</tspan>
+    <tspan dx="12" font-weight="600" opacity="0.92">Sub</tspan>
+    <tspan dx="10" font-weight="600" opacity="0.92">Store</tspan>
+  </text>
+</svg>
