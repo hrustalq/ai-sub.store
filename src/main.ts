@@ -33,8 +33,16 @@ async function bootstrap() {
     const bot = app.get<Telegraf>(getBotToken());
     app.use(bot.webhookCallback(webhookPath));
     const webhookUrl = `${webhookDomain.replace(/\/$/, '')}${webhookPath}`;
-    await bot.telegram.setWebhook(webhookUrl);
-    logger.log(`Telegram webhook set: ${webhookUrl}`);
+    try {
+      await bot.telegram.setWebhook(webhookUrl);
+      logger.log(`Telegram webhook set: ${webhookUrl}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(
+        { webhookUrl, error: message },
+        'Failed to register Telegram webhook — server will start, but the bot may not receive updates until api.telegram.org is reachable',
+      );
+    }
   }
 
   const port = config.get<number>('port') ?? 3000;
