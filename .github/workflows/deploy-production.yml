@@ -16,7 +16,7 @@ jobs:
     environment: production
 
     env:
-      VPS_HOST: 5.42.126.174
+      VPS_HOST: ${{ vars.VPS_HOST }}
       VPS_USER: ${{ vars.VPS_USER }}
       DEPLOY_PATH: /opt/ai-sub.store
 

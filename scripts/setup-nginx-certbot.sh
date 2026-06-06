@@ -3,9 +3,9 @@
 # One-time VPS setup: nginx, certbot, sudo access for deploy user, TLS site.
 #
 # Run on the VPS as root:
-#   scp -r scripts/nginx scripts/setup-nginx-certbot.sh root@5.42.126.174:/tmp/
-#   ssh root@5.42.126.174 \
-#     'DOMAIN=ai-sub.store LETSENCRYPT_EMAIL=you@example.com DEPLOY_USER=deploy bash /tmp/setup-nginx-certbot.sh'
+#   scp -r scripts/nginx scripts/setup-nginx-certbot.sh root@${VPS_HOST}:/tmp/
+#   ssh root@${VPS_HOST} \
+#     'DOMAIN=api.ai-sub.store LETSENCRYPT_EMAIL=you@example.com DEPLOY_USER=deploy bash /tmp/setup-nginx-certbot.sh'
 #
 # Prerequisites:
 #   - DNS A record for DOMAIN → VPS public IP
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
-DOMAIN="${DOMAIN:-ai-sub.store}"
+DOMAIN="${DOMAIN:-api.ai-sub.store}"
 LETSENCRYPT_EMAIL="${LETSENCRYPT_EMAIL:-}"
 SCRIPT_ROOT="${SCRIPT_ROOT:-/opt/ai-sub.store}"
 NGINX_SCRIPT="${SCRIPT_ROOT}/scripts/nginx/install-nginx-site.sh"
@@ -107,7 +107,7 @@ print_summary() {
 nginx + certbot bootstrap complete.
 
   domain:   ${DOMAIN}
-  site:     /etc/nginx/sites-available/ai-sub.store
+  site:     /etc/nginx/sites-available/${DOMAIN}
   cert:     /etc/letsencrypt/live/${DOMAIN}/
 
 Verify:
