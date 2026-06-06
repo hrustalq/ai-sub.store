@@ -90,6 +90,17 @@ jobs:
           exit 1
           EOF
 
+      - name: Update nginx site configuration
+        if: success()
+        run: |
+          ssh "${VPS_USER}@${VPS_HOST}" <<EOF
+          if [[ -x '${DEPLOY_PATH}/scripts/nginx/install-nginx-site.sh' ]]; then
+            sudo PUBLIC_BASE_URL='${{ vars.PUBLIC_BASE_URL }}' '${DEPLOY_PATH}/scripts/nginx/install-nginx-site.sh'
+          else
+            echo "nginx install script not found — run scripts/setup-nginx-certbot.sh on the VPS first"
+          fi
+          EOF
+
       - name: Prune dangling images
         if: success()
         run: ssh "${VPS_USER}@${VPS_HOST}" "docker image prune -f"
